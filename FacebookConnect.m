@@ -107,6 +107,7 @@
 								 forKey:[self.callbackIds valueForKey:@"login"]];
 	}
 
+  [permissions release];
 }
 
 - (void)requestWithGraphPath:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
@@ -218,7 +219,7 @@
 	DLog(@"request:%@\n didLoad:%@", request, result);
 
 	// Loop through facebookRequests to find matching one
-	NSString *matchingCallbackId;
+	NSString *matchingCallbackId = nil;
 	for (id key in self.facebookRequests) {
 		id value = [self.facebookRequests objectForKey:key];
 		if(request == value) matchingCallbackId = key;
@@ -233,6 +234,7 @@
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:mutableResult];
 		[self writeJavascript:[pluginResult toSuccessCallbackString:matchingCallbackId]];
 
+		[mutableResult release];
 	} else if ([result isKindOfClass:[NSData class]]) {
         DLog(@"Unsupported result... %@", result);
         //[profilePicture release];
@@ -251,7 +253,7 @@
 	DLog(@"request:%@\n didFailWithError:%@", request, error);
 
 	// Loop through facebookRequests to find matching one
-	NSString *matchingCallbackId;
+	NSString *matchingCallbackId = nil;
 	for (id key in self.facebookRequests) {
 		id value = [self.facebookRequests objectForKey:key];
 		if(request == value) matchingCallbackId = key;
