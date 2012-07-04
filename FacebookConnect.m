@@ -88,7 +88,7 @@
 
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"login"];
-	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[NSMutableArray alloc] init];
+	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[[NSMutableArray alloc] init] autorelease];
 
 	if([options objectForKey:@"appId"]) {
 		self.appId = [options objectForKey:@"appId"];
@@ -107,7 +107,6 @@
 								 forKey:[self.callbackIds valueForKey:@"login"]];
 	}
 
-  [permissions release];
 }
 
 - (void)requestWithGraphPath:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
