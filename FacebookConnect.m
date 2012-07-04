@@ -158,7 +158,7 @@
 }
 
 - (void)fbDidNotLogin:(BOOL)cancelled {
-	DLog(@"fbDidNotLogin:%@", cancelled);
+	DLog(@"fbDidNotLogin:%d", (int)cancelled);
 
 	NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 	[result setObject:(cancelled ? @"1" : @"0") forKey:@"cancelled"];
