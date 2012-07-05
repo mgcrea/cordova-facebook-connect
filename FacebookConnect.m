@@ -286,9 +286,9 @@ NSString *const kFunctionDialog = @"dialog";
 - (void)dialogDidNotComplete:(FBDialog *)dialog {
 	DLog(@"dialogDidNotComplete:%@", dialog);
 
-	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"cancelled", nil];
-	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
-	[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
+	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"1", @"cancelled", nil];
+	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
+	[self writeJavascript:[pluginResult toErrorCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
 	[result release];
 }
 
