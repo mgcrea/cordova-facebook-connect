@@ -40,19 +40,35 @@
 
 	};
 
-	FacebookConnect.prototype.requestWithGraphPath = function(path, options, callback) {
+	/**
+	 * Make an asynchrous Facebook Graph API request.
+	 *
+	 * @param {String} path Is the path to the Graph API endpoint.
+	 * @param {Object} [options] Are optional key-value string pairs representing the API call parameters.
+	 * @param {String} [httpMethod] Is an optional HTTP method that defaults to GET.
+	 * @param {Function} [callback] Is an optional callback method that receives the results of the API call.
+	 */
+	FacebookConnect.prototype.requestWithGraphPath = function(path, options, httpMethod, callback) {
+		var method;
+
 		if(!path) path = "me";
-		if(typeof options == 'function') {
+		if(typeof options === 'function') {
 			callback = options;
 			options = {};
+			httpMethod = undefined;
 		}
+		if (typeof httpMethod === 'function') {
+			callback = httpMethod;
+			httpMethod = undefined;
+		}
+		httpMethod = httpMethod || 'GET';
 
 		var _callback = function(result) {
 			//console.log('FacebookConnect.requestWithGraphPath: %o', arguments);
 			if(typeof callback == 'function') callback.apply(null, arguments);
 		};
 
-		return cordova.exec(_callback, _callback, service, 'requestWithGraphPath', [{path: path, options: options}]);
+		return cordova.exec(_callback, _callback, service, 'requestWithGraphPath', [{path: path, options: options, httpMethod: httpMethod}]);
 
 	};
 
