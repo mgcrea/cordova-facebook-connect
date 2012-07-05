@@ -63,6 +63,17 @@
 
 	};
 
+	FacebookConnect.prototype.dialog = function(method, options, callback) {
+
+		var _callback = function(result) {
+			//console.log('FacebookConnect.dialog: %o', arguments);
+			if(typeof callback == 'function') callback.apply(null, arguments);
+		};
+
+		return cordova.exec(_callback, _callback, service, 'dialog', [{method: method, params: options}]);
+
+	};
+
 	cordova.addConstructor(function() {
 		if(!window.plugins) window.plugins = {};
 		window.plugins.facebookConnect = new FacebookConnect();

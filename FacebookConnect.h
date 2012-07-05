@@ -15,14 +15,13 @@
 
 #import "FBConnect.h"
 
-@interface FacebookConnect : CDVPlugin < FBSessionDelegate, FBRequestDelegate, FBDialogDelegate > {
-
-	NSMutableDictionary* _callbackIds;
-	NSString* _appId;
-	Facebook* _facebook;
-	NSMutableDictionary* _facebookRequests;
-	NSDateFormatter* _dateFormatter;
-
+@interface FacebookConnect : CDVPlugin <FBSessionDelegate, FBRequestDelegate, FBDialogDelegate> {
+ @private
+  NSMutableDictionary *_callbackIds;
+  NSString *_appId;
+  Facebook *_facebook;
+  NSMutableDictionary *_facebookRequests;
+  NSDateFormatter *_dateFormatter;
 }
 
 #pragma mark -
@@ -41,6 +40,7 @@
 - (void)login:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)requestWithGraphPath:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)logout:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
+- (void)dialog:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 
 @end
 
