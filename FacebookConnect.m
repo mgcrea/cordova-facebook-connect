@@ -88,7 +88,7 @@
 
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"login"];
-	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[NSMutableArray alloc] init];
+	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[[NSMutableArray alloc] init] autorelease];
 
 	if([options objectForKey:@"appId"]) {
 		self.appId = [options objectForKey:@"appId"];
@@ -157,7 +157,7 @@
 }
 
 - (void)fbDidNotLogin:(BOOL)cancelled {
-	DLog(@"fbDidNotLogin:%@", cancelled);
+	DLog(@"fbDidNotLogin:%d", (int)cancelled);
 
 	NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 	[result setObject:(cancelled ? @"1" : @"0") forKey:@"cancelled"];
@@ -185,7 +185,7 @@
     [defaults removeObjectForKey:@"FBExpirationDateKey"];
     [defaults synchronize];
 
-	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:@"logout"]]];
 
 }
@@ -218,7 +218,7 @@
 	DLog(@"request:%@\n didLoad:%@", request, result);
 
 	// Loop through facebookRequests to find matching one
-	NSString *matchingCallbackId;
+	NSString *matchingCallbackId = nil;
 	for (id key in self.facebookRequests) {
 		id value = [self.facebookRequests objectForKey:key];
 		if(request == value) matchingCallbackId = key;
@@ -233,6 +233,7 @@
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:mutableResult];
 		[self writeJavascript:[pluginResult toSuccessCallbackString:matchingCallbackId]];
 
+		[mutableResult release];
 	} else if ([result isKindOfClass:[NSData class]]) {
         DLog(@"Unsupported result... %@", result);
         //[profilePicture release];
@@ -251,7 +252,7 @@
 	DLog(@"request:%@\n didFailWithError:%@", request, error);
 
 	// Loop through facebookRequests to find matching one
-	NSString *matchingCallbackId;
+	NSString *matchingCallbackId = nil;
 	for (id key in self.facebookRequests) {
 		id value = [self.facebookRequests objectForKey:key];
 		if(request == value) matchingCallbackId = key;
