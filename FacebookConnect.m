@@ -13,6 +13,8 @@
 	#import "JSONKit.h"
 #endif
 
+NSString *const kFunctionDialog = @"dialog";
+
 @implementation FacebookConnect
 
 @synthesize callbackIds = _callbackIds;
@@ -128,6 +130,19 @@
 	[self.callbackIds setValue:[arguments pop] forKey:@"logout"];
 	[self.facebook logout];
 
+}
+
+- (void)dialog:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
+	DLog(@"%@:%@\n withDict:%@", kFunctionDialog, arguments, options);
+
+	// The first argument in the arguments parameter is the callbackId.
+	[self.callbackIds setValue:[arguments pop] forKey:kFunctionDialog];
+	NSString *method = [options objectForKey:@"method"] ?: @"apprequests";
+	NSMutableDictionary* params = [options objectForKey:@"params"] ?: [[[NSMutableDictionary alloc] init] autorelease];
+
+	[self.facebook dialog:method
+              andParams:params
+            andDelegate:self];
 }
 
 #pragma mark -
@@ -266,10 +281,47 @@
 #pragma mark < FBDialogDelegate >
 
 /**
- * Called when a UIServer Dialog successfully return.
+ * Called when a UIServer Dialog is closed.
  */
-- (void)dialogDidComplete:(FBDialog *)dialog {
-	DLog(@"dialogDidComplete:%@", dialog);
+- (void)dialogDidNotComplete:(FBDialog *)dialog {
+	DLog(@"dialogDidNotComplete:%@", dialog);
+
+	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"cancelled", nil];
+	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
+	[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
+	[result release];
+}
+
+/**
+ * Called when a UIServer Dialog successfully returns. Use this callback
+ * instead of dialogDidComplete: to properly handle successful shares/sends
+ * that return ID data back.
+ */
+- (void)dialogCompleteWithUrl:(NSURL *)url {
+	if (![url query]) {
+		DLog(@"User canceled dialog or there was an error");
+		[self dialogDidNotComplete:nil];
+	}
+	else {
+		NSDictionary *result = [self parseURLParams:[url query]];
+		CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
+		[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
+	}
+}
+
+/**
+ * Helper method to parse URL query parameters. The original definition is from the Hackbook example.
+ */
+- (NSDictionary *)parseURLParams:(NSString *)query {
+	NSArray *pairs = [query componentsSeparatedByString:@"&"];
+	NSMutableDictionary *params = [[[NSMutableDictionary alloc] init] autorelease];
+	for (NSString *pair in pairs) {
+		NSArray *kv = [pair componentsSeparatedByString:@"="];
+		NSString *key = [[kv objectAtIndex:0] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		NSString *val = [[kv objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		[params setObject:val forKey:key];
+	}
+	return params;
 }
 
 #pragma mark -
