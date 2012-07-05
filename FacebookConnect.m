@@ -287,7 +287,7 @@ NSString *const kFunctionDialog = @"dialog";
 	DLog(@"dialogDidNotComplete:%@", dialog);
 
 	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"cancelled", nil];
-	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
+	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
 	[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
 	[result release];
 }
