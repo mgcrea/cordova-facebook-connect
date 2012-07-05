@@ -21,8 +21,7 @@
 @synthesize facebookRequests = _facebookRequests;
 @synthesize dateFormatter = _dateFormatter;
 
-#pragma mark -
-#pragma mark Custom getters & setters
+#pragma mark - Custom getters & setters
 
 - (NSMutableDictionary *)callbackIds {
 	if(_callbackIds == nil) {
@@ -54,8 +53,7 @@
 	return _dateFormatter;
 }
 
-#pragma mark -
-#pragma mark Cordova plugin interface
+#pragma mark - Cordova plugin interface
 
 - (void)initWithAppId:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
 	DLog(@"initWithAppId:%@\n withDict:%@", arguments, options);
@@ -70,8 +68,8 @@
 	// Check for any stored session update Facebook session information
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	if ([defaults objectForKey:@"FBAccessTokenKey"] && [defaults objectForKey:@"FBExpirationDateKey"]) {
-        self.facebook.accessToken = [defaults objectForKey:@"FBAccessTokenKey"];
-        self.facebook.expirationDate = [defaults objectForKey:@"FBExpirationDateKey"];
+		self.facebook.accessToken = [defaults objectForKey:@"FBAccessTokenKey"];
+		self.facebook.expirationDate = [defaults objectForKey:@"FBExpirationDateKey"];
 
 		// Build returned result
 		[result setObject:self.facebook.accessToken forKey:@"accessToken"];
@@ -115,8 +113,14 @@
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"requestWithGraphPath"];
 	NSString *path = [options objectForKey:@"path"] ?: @"me";
+	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[NSMutableDictionary alloc] init];
 
-	[self.facebookRequests setValue:[self.facebook requestWithGraphPath:path andDelegate:self]
+	// Make sure we pass a string for a limit key
+	if([params valueForKey:@"limit"]) [params setValue:[NSString stringWithFormat:@"%d", [params valueForKey:@"limit"]] forKey:@"limit"];
+
+	FBRequest *request = [self.facebook requestWithGraphPath:path andParams:params andDelegate:self];
+
+	[self.facebookRequests setValue:request
 							 forKey:[self.callbackIds valueForKey:@"requestWithGraphPath"]];
 
 }
@@ -130,15 +134,14 @@
 
 }
 
-#pragma mark -
-#pragma mark < FBSessionDelegate >
+#pragma mark - < FBSessionDelegate >
 
 - (void) handleOpenURL:(NSNotification *)notification {
 	NSURL* url = [notification object];
 	if (![url isKindOfClass:[NSURL class]]) {
-        return;
+		return;
 	}
-    [self.facebook handleOpenURL:url];
+	[self.facebook handleOpenURL:url];
 }
 
 - (void)fbDidLogin {
@@ -146,9 +149,9 @@
 
 	// Update session information in NSUserDefaults
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:[self.facebook accessToken] forKey:@"FBAccessTokenKey"];
-    [defaults setObject:[self.facebook expirationDate] forKey:@"FBExpirationDateKey"];
-    [defaults synchronize];
+	[defaults setObject:[self.facebook accessToken] forKey:@"FBAccessTokenKey"];
+	[defaults setObject:[self.facebook expirationDate] forKey:@"FBExpirationDateKey"];
+	[defaults synchronize];
 
 	// Perform initial graph request
 	[self.facebookRequests setValue:[self.facebook requestWithGraphPath:@"me" andDelegate:self]
@@ -157,7 +160,7 @@
 }
 
 - (void)fbDidNotLogin:(BOOL)cancelled {
-	DLog(@"fbDidNotLogin:%@", cancelled);
+	DLog(@"fbDidNotLogin:%c", cancelled);
 
 	NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 	[result setObject:(cancelled ? @"1" : @"0") forKey:@"cancelled"];
@@ -170,20 +173,20 @@
 	DLog(@"fbDidExtendToken:%@\n expiresAt:%@", accessToken, expiresAt);
 
 	// Update session information in NSUserDefaults
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:accessToken forKey:@"FBAccessTokenKey"];
-    [defaults setObject:expiresAt forKey:@"FBExpirationDateKey"];
-    [defaults synchronize];
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	[defaults setObject:accessToken forKey:@"FBAccessTokenKey"];
+	[defaults setObject:expiresAt forKey:@"FBExpirationDateKey"];
+	[defaults synchronize];
 
 }
 
 - (void)fbDidLogout {
 
-    // Cleared stored session information
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults removeObjectForKey:@"FBAccessTokenKey"];
-    [defaults removeObjectForKey:@"FBExpirationDateKey"];
-    [defaults synchronize];
+	// Cleared stored session information
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	[defaults removeObjectForKey:@"FBAccessTokenKey"];
+	[defaults removeObjectForKey:@"FBExpirationDateKey"];
+	[defaults synchronize];
 
 	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
 	[self writeJavascript:[pluginResult toSuccessCallbackString:[self.callbackIds valueForKey:@"logout"]]];
@@ -192,8 +195,7 @@
 
 - (void)fbSessionInvalidated {}
 
-#pragma mark -
-#pragma mark < FBRequestDelegate >
+#pragma mark - < FBRequestDelegate >
 
 /**
  * Called when the Facebook API request has returned a response. This callback
@@ -234,10 +236,10 @@
 		[self writeJavascript:[pluginResult toSuccessCallbackString:matchingCallbackId]];
 
 	} else if ([result isKindOfClass:[NSData class]]) {
-        DLog(@"Unsupported result... %@", result);
-        //[profilePicture release];
-        //profilePicture = [[UIImage alloc] initWithData: result];
-    } else {
+		DLog(@"Unsupported result... %@", result);
+		//[profilePicture release];
+		//profilePicture = [[UIImage alloc] initWithData: result];
+	} else {
 		DLog(@"Unsupported result... %@", result);
 	}
 
@@ -261,8 +263,7 @@
 	[self writeJavascript:[pluginResult toErrorCallbackString:matchingCallbackId]];
 };
 
-#pragma mark -
-#pragma mark < FBDialogDelegate >
+#pragma mark - < FBDialogDelegate >
 
 /**
  * Called when a UIServer Dialog successfully return.

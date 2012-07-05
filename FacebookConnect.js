@@ -1,7 +1,7 @@
 //
 //  FacebookConnect.js
 //
-// Created by Olivier Louvignes on 15/06/2012.
+// Created by Olivier Louvignes on 05/31/2012.
 //
 // Copyright 2012 Olivier Louvignes. All rights reserved.
 // MIT Licensed
@@ -40,15 +40,19 @@
 
 	};
 
-	FacebookConnect.prototype.requestWithGraphPath = function(path, callback) {
+	FacebookConnect.prototype.requestWithGraphPath = function(path, options, callback) {
 		if(!path) path = "me";
+		if(typeof options == 'function') {
+			callback = options;
+			options = {};
+		}
 
 		var _callback = function(result) {
 			//console.log('FacebookConnect.requestWithGraphPath: %o', arguments);
 			if(typeof callback == 'function') callback.apply(null, arguments);
 		};
 
-		return cordova.exec(_callback, _callback, service, 'requestWithGraphPath', [{path: path}]);
+		return cordova.exec(_callback, _callback, service, 'requestWithGraphPath', [{path: path, options: options}]);
 
 	};
 
