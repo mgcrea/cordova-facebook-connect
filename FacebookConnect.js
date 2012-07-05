@@ -1,7 +1,7 @@
 //
 //  FacebookConnect.js
 //
-// Created by Olivier Louvignes on 05/31/2012.
+// Created by Olivier Louvignes on 2012-06-25.
 //
 // Copyright 2012 Olivier Louvignes. All rights reserved.
 // MIT Licensed
