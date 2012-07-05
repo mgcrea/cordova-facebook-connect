@@ -7,7 +7,7 @@ by [Olivier Louvignes](http://olouv.com)
 
 * This plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `Libraries` folder (licensed under the Apache License, Version 2.0).
 
-* Main differences from the existing implementation [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson is that it does not require the Facebook JS sdk (redundant to the iOS sdk bundled here). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling). However, the implementation is currently not fully finished (Missing dialog implementation) and iOS-only.
+* Main differences from the existing implementation [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson is that it does not require the Facebook JS sdk (redundant to the iOS sdk bundled here). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling). However, the implementation is currently iOS-only.
 
 ## PLUGIN SETUP ##
 
@@ -33,9 +33,24 @@ Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cor
 
     facebookConnect.login({permissions: ["email", "user_about_me"], appId: "YOUR_APP_ID"}, function(result) {
         console.log("FacebookConnect.login:" + JSON.stringify(result));
-        facebookConnect.requestWithGraphPath("/me/friends", function(result) {
+
+        // Basic graph request example
+        facebookConnect.requestWithGraphPath("/me/friends", {limit: 100}, function(result) {
             console.log("FacebookConnect.requestWithGraphPath:" + JSON.stringify(result));
         });
+
+        // Feed dialog example
+        var dialogOptions = {
+            link: 'https://developers.facebook.com/docs/reference/dialogs/',
+            picture: 'http://fbrell.com/f8.jpg',
+            name: 'Facebook Dialogs',
+            caption: 'Reference Documentation',
+            description: 'Using Dialogs to interact with users.'
+        };
+        facebookConnect.dialog('feed', dialogOptions, function(response) {
+            console.log("FacebookConnect.dialog:" + JSON.stringify(response));
+        });
+
     });
 
 * Check [source](https://github.com/mgcrea/cordova-facebook-connect/tree/master/FacebookConnect.js) for additional configuration.
@@ -61,6 +76,10 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## CREDITS ##
+
+Contributors :
+
+* [Jon Buffington](http://blog.jon.buffington.name/) added dialog support.
 
 Inspired by :
 
