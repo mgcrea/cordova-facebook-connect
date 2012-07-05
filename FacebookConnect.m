@@ -115,12 +115,13 @@ NSString *const kFunctionDialog = @"dialog";
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"requestWithGraphPath"];
 	NSString *path = [options objectForKey:@"path"] ?: @"me";
-	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[[NSMutableDictionary alloc] init] autorelease];
+	NSString *httpMethod = [options objectForKey:@"httpMethod"] ?: @"GET";
 
 	// Make sure we pass a string for a limit key
 	if([params valueForKey:@"limit"]) [params setValue:[NSString stringWithFormat:@"%d", [params valueForKey:@"limit"]] forKey:@"limit"];
 
-	FBRequest *request = [self.facebook requestWithGraphPath:path andParams:params andDelegate:self];
+	FBRequest *request = [self.facebook requestWithGraphPath:path andParams:params andHttpMethod:httpMethod andDelegate:self];
 
 	[self.facebookRequests setValue:request
 							 forKey:[self.callbackIds valueForKey:@"requestWithGraphPath"]];
