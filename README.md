@@ -5,11 +5,15 @@ by [Olivier Louvignes](http://olouv.com)
 
 * This plugin provides a simple way to use Facebook Graph API in Cordova. It does comply with the latest (future-2.x) cordova standards.
 
-* This plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `Libraries` folder (licensed under the Apache License, Version 2.0).
+* Both iOS & Android are supported with the same javascript interface.
 
-* Main differences from the existing implementation [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson is that it does not require the Facebook JS sdk (redundant to the iOS sdk bundled here). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling). However, the implementation is currently iOS-only.
+* For iOS, this plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `Libraries` folder (licensed under the Apache License, Version 2.0).
 
-## PLUGIN SETUP ##
+* For Android, this plugin relies on the [Facebook Android SDK](https://github.com/facebook/facebook-android-sdk) that is packaged as a .jar in the `libs` folder (licensed under the Apache License, Version 2.0).
+
+* Regarding the existing implementation : [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson, this version does not require the Facebook JS sdk (redundant to native sdk). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling).
+
+## PLUGIN SETUP FOR IOS ##
 
 Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cordova-ios).
 
@@ -26,7 +30,40 @@ Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cor
 
     The last thing that needs to be accomplished to enable SSO support is a change to the .plist file that handles configuration for the app. Xcode creates this file automatically when the project is created. A specific URL needs to be registered in this file that uniquely identifies the app with iOS. Create a new row named URL types with a single item, URL Schemes, containing a single value, fbYOUR_APP_ID (the literal characters fb followed by your app ID). The following shows exactly how the row should appear in the .plist file:
 
-## JAVASCRIPT INTERFACE ##
+## PLUGIN SETUP FOR ANDROID ##
+
+Using this plugin requires [Cordova Android](https://github.com/apache/incubator-cordova-android).
+
+1. Make sure your Android project has been [updated for Cordova](https://github.com/apache/incubator-cordova-android/blob/master/guides/Cordova%20Upgrade%20Guide.md)
+2. Merge both the `libs` and `src` folder from this plugin to your projet.
+3. Refresh (fn-F5), right-click on the `libs/facebook-android-sdk.jar` & select `Build path > Add to build path` (the debug version will output to the console).
+3. Add the .js files to your `assets/www` folder on disk, and add reference(s) to the .js files using `<script>` tags in your html file(s)
+
+
+    `<script type="text/javascript" src="/js/plugins/FacebookConnect.js"></script>`
+
+
+4. Add new entry with key `FacebookConnect` and value `org.apache.cordova.plugins.FacebookConnect` to `Plugins` in `res/xml/config.xml`
+
+
+    <plugin name="FacebookConnect" value="org.apache.cordova.plugins.FacebookConnect"/>
+
+
+5. Modify your application main Activity by adding this method for SSO support:
+
+>
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //String error = data.getStringExtra("error");
+        //Log.d("CordovaActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode + ", error=" + error);
+        super.onActivityResult(requestCode, resultCode, data);
+        data.putExtra("requestCode", requestCode);
+        data.putExtra("resultCode", resultCode);
+        this.onNewIntent(data);
+    }
+
+
+## JAVASCRIPT INTERFACE (IOS/ANDROID) ##
 
     // After device ready, create a local alias
     var facebookConnect = window.plugins.facebookConnect;
@@ -79,7 +116,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Contributors :
 
-* [Jon Buffington](http://blog.jon.buffington.name/) added dialog support.
+* [Jon Buffington](http://blog.jon.buffington.name/) added dialog support for iOS.
 
 Inspired by :
 
