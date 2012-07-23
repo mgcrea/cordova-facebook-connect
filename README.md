@@ -18,7 +18,7 @@ by [Olivier Louvignes](http://olouv.com)
 Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cordova-ios).
 
 1. Make sure your Xcode project has been [updated for Cordova](https://github.com/apache/incubator-cordova-ios/blob/master/guides/Cordova%20Upgrade%20Guide.md)
-2. Drag and drop the `FacebookConnect` folder from Finder to your Plugins folder in XCode, using "Create groups for any added folders"
+2. Rename the `iOS` folder to `FacebookConnect`, drag and drop it from Finder to your Plugins folder in XCode, using "Create groups for any added folders"
 3. Add the .js files to your `www` folder on disk, and add reference(s) to the .js files using `<script>` tags in your html file(s)
 
 
@@ -57,6 +57,7 @@ Using this plugin requires [Cordova Android](https://github.com/apache/incubator
         //String error = data.getStringExtra("error");
         //Log.d("CordovaActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode + ", error=" + error);
         super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == Activity.RESULT_CANCELED) return;
         data.putExtra("requestCode", requestCode);
         data.putExtra("resultCode", resultCode);
         this.onNewIntent(data);
