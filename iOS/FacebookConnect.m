@@ -7,11 +7,7 @@
 // MIT Licensed
 
 #import "FacebookConnect.h"
-#ifdef CORDOVA_FRAMEWORK
-	#import <Cordova/JSONKit.h>
-#else
-	#import "JSONKit.h"
-#endif
+#import <Cordova/JSONKit.h>
 
 NSString *const kFunctionDialog = @"dialog";
 
