@@ -54,10 +54,10 @@ Using this plugin requires [Cordova Android](https://github.com/apache/incubator
 >
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //String error = data.getStringExtra("error");
+        //String error = (data != null) ? data.getStringExtra("error") : "";
         //Log.d("CordovaActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode + ", error=" + error);
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == Activity.RESULT_CANCELED) return;
+        if(resultCode == Activity.RESULT_CANCELED) data = new Intent();
         data.putExtra("requestCode", requestCode);
         data.putExtra("resultCode", resultCode);
         this.onNewIntent(data);
@@ -71,6 +71,12 @@ Using this plugin requires [Cordova Android](https://github.com/apache/incubator
 
     facebookConnect.login({permissions: ["email", "user_about_me"], appId: "YOUR_APP_ID"}, function(result) {
         console.log("FacebookConnect.login:" + JSON.stringify(result));
+
+        // Check for cancellation/error
+        if(result.cancelled || result.error) {
+            console.log("FacebookConnect.login:failedWithError:" + result.message);
+            return;
+        }
 
         // Basic graph request example
         facebookConnect.requestWithGraphPath("/me/friends", {limit: 100}, function(result) {

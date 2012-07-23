@@ -177,9 +177,7 @@ NSString *const kFunctionDialog = @"dialog";
 - (void)fbDidNotLogin:(BOOL)cancelled {
 	DLog(@"fbDidNotLogin:%@", cancelled ? @"YES" : @"NO");
 
-	NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
-	[result setObject:(cancelled ? @"1" : @"0") forKey:@"cancelled"];
-
+	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"1", @"cancelled", @"User dissmissed the login", @"message", nil];
 	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
 	[self writeJavascript:[pluginResult toErrorCallbackString:[self.callbackIds valueForKey:@"login"]]];
 }
@@ -252,11 +250,11 @@ NSString *const kFunctionDialog = @"dialog";
 
 		[mutableResult release];
 	} else if ([result isKindOfClass:[NSData class]]) {
-		DLog(@"Unsupported result... %@", result);
+		DLog(@"Unsupported result... todo! %@", result);
 		//[profilePicture release];
 		//profilePicture = [[UIImage alloc] initWithData: result];
 	} else {
-		DLog(@"Unsupported result... %@", result);
+		DLog(@"Unsupported result... todo! %@", result);
 	}
 
 };
@@ -287,7 +285,7 @@ NSString *const kFunctionDialog = @"dialog";
 - (void)dialogDidNotComplete:(FBDialog *)dialog {
 	DLog(@"dialogDidNotComplete:%@", dialog);
 
-	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"1", @"cancelled", nil];
+	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"1", @"cancelled", @"User dissmissed the dialog", @"message", nil];
 	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
 	[self writeJavascript:[pluginResult toErrorCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
 	[result release];

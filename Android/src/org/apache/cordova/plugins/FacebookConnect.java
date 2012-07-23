@@ -91,6 +91,7 @@ public class FacebookConnect extends Plugin {
 
 		this.appId = params.getString("appId");
 		Facebook facebook = this.getFacebook();
+		result.put("appId", this.appId);
 
 		// Check for any stored session update Facebook session information
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
@@ -147,7 +148,7 @@ public class FacebookConnect extends Plugin {
 			this.authorizeDialogListener = new AuthorizeDialogListener(me, callbackId);
 			Runnable runnable = new Runnable() {
 				public void run() {
-					me.getFacebook().authorize(me.cordova.getActivity(), permissions, authorizeDialogListener);
+					me.getFacebook().authorize(me.cordova.getActivity(), permissions, me.authorizeDialogListener);
 				};
 			};
 			pluginResult.setKeepCallback(true);
@@ -257,6 +258,10 @@ public class FacebookConnect extends Plugin {
 		int resultCode = intent.getExtras().getInt("resultCode");
 		intent.removeExtra("requestCode");
 		intent.removeExtra("resultCode");
+		if(resultCode == Activity.RESULT_CANCELED) {
+			this.authorizeDialogListener.onCancel();
+			return;
+		}
 		this.getFacebook().authorizeCallback(requestCode, resultCode, intent);
 	}
 
@@ -326,19 +331,25 @@ public class FacebookConnect extends Plugin {
 		@Override
 		public void onFacebookError(FacebookError e) {
 			Log.d(CLASS, "AuthorizeDialogListener::onFacebookError() " + e.getMessage());
-			this.source.error("FacebookError:" + e.getMessage(), callbackId);
+			JSONObject result = new JSONObject();
+			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
+			this.source.error(result, this.callbackId);
 		}
 
 		@Override
 		public void onError(DialogError e) {
 			Log.d(CLASS, "AuthorizeDialogListener::onError() " + e.getMessage());
-			this.source.error("DialogError:" + e.getMessage(), callbackId);
+			JSONObject result = new JSONObject();
+			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
+			this.source.error(result, this.callbackId);
 		}
 
 		@Override
 		public void onCancel() {
 			Log.d(CLASS, "AuthorizeDialogListener::onCancel()");
-			this.source.error("onCancel", callbackId);
+			JSONObject result = new JSONObject();
+			try { result.put("cancelled", 1); } catch (JSONException e) {}
+			this.source.error(result, callbackId);
 		}
 
 	}
@@ -373,7 +384,6 @@ public class FacebookConnect extends Plugin {
 				try {
 					result.put(key, values.get(key));
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -381,22 +391,31 @@ public class FacebookConnect extends Plugin {
 			PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
 
 			pluginResult.setKeepCallback(false);
-			this.source.success(pluginResult, callbackId);
+			this.source.success(pluginResult, this.callbackId);
 		}
 
 		@Override
 		public void onFacebookError(FacebookError e) {
-			this.source.error("FacebookError:" + e.getMessage(), callbackId);
+			Log.d(CLASS, "RegularDialogListener::onFacebookError() " + e.getMessage());
+			JSONObject result = new JSONObject();
+			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
+			this.source.error(result, this.callbackId);
 		}
 
 		@Override
 		public void onError(DialogError e) {
-			this.source.error("DialogError:" + e.getMessage(), callbackId);
+			Log.d(CLASS, "RegularDialogListener::onError() " + e.getMessage());
+			JSONObject result = new JSONObject();
+			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
+			this.source.error(result, this.callbackId);
 		}
 
 		@Override
 		public void onCancel() {
-			this.source.error("onCancel", callbackId);
+			Log.d(CLASS, "RegularDialogListener::onCancel()");
+			JSONObject result = new JSONObject();
+			try { result.put("cancelled", 1); } catch (JSONException e) {}
+			this.source.error(result, this.callbackId);
 		}
 
 	}
