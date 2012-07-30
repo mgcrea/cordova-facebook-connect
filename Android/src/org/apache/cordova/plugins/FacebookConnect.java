@@ -95,13 +95,13 @@ public class FacebookConnect extends Plugin {
 
 		// Check for any stored session update Facebook session information
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-		String access_token = prefs.getString("access_token", null);
-		Long expires = prefs.getLong("access_expires", 0);
-		if(access_token != null) facebook.setAccessToken(access_token);
-		if(expires != 0) facebook.setAccessExpires(expires);
+		String accessToken = prefs.getString("access_token", null);
+		Long accessExpires = prefs.getLong("access_expires", 0);
+		if(accessToken != null) facebook.setAccessToken(accessToken);
+		if(accessExpires != 0) facebook.setAccessExpires(accessExpires);
 
-		result.put("access_token", access_token);
-		result.put("expires", expires);
+		result.put("accessToken", accessToken);
+		result.put("expirationDate", accessExpires);
 
 		pluginResult = new PluginResult(PluginResult.Status.OK, result);
 		this.success(pluginResult, callbackId);
@@ -128,14 +128,12 @@ public class FacebookConnect extends Plugin {
 		if(params.has("appId")) this.appId = params.getString("appId");
 		Facebook facebook = this.getFacebook();
 
-		if(params.has("appId")) {
-			// Check for any stored session update Facebook session information
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-			String access_token = prefs.getString("access_token", null);
-			Long expires = prefs.getLong("access_expires", 0);
-			if(access_token != null) facebook.setAccessToken(access_token);
-			if(expires != 0) facebook.setAccessExpires(expires);
-		}
+		// Check for any stored session update Facebook session information
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
+		String accessToken = prefs.getString("access_token", null);
+		Long accessExpires = prefs.getLong("access_expires", 0);
+		if(accessToken != null) facebook.setAccessToken(accessToken);
+		if(accessExpires != 0) facebook.setAccessExpires(accessExpires);
 
 		if(!this.getFacebook().isSessionValid()) {
 			JSONArray permissionsArray = (JSONArray)params.get("permissions");
@@ -145,6 +143,7 @@ public class FacebookConnect extends Plugin {
 			}
 
 			final FacebookConnect me = this;
+			//Log.d(CLASS, "callbackId="+callbackId);
 			this.authorizeDialogListener = new AuthorizeDialogListener(me, callbackId);
 			Runnable runnable = new Runnable() {
 				public void run() {
@@ -155,6 +154,9 @@ public class FacebookConnect extends Plugin {
 			this.cordova.getActivity().runOnUiThread(runnable);
 		} else {
 			JSONObject result = new JSONObject(facebook.request("/me"));
+			result.put("accessToken", accessToken);
+			result.put("expirationDate", accessExpires);
+			Log.d(CLASS, "login::result " + result.toString());
 			pluginResult = new PluginResult(PluginResult.Status.OK, result);
 		}
 
@@ -296,11 +298,11 @@ public class FacebookConnect extends Plugin {
 			Log.d(CLASS, "AuthorizeDialogListener::onComplete() " + values.toString());
 
 			// Update session information
-			String token = this.facebook.getAccessToken();
-			long token_expires = this.facebook.getAccessExpires();
+			final String accessToken = this.facebook.getAccessToken();
+			final long accessExpires = this.facebook.getAccessExpires();
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-			prefs.edit().putLong("access_expires", token_expires).commit();
-			prefs.edit().putString("access_token", token).commit();
+			prefs.edit().putString("access_token", accessToken).commit();
+			prefs.edit().putLong("access_expires", accessExpires).commit();
 
 			final AuthorizeDialogListener me = this;
 			Thread thread = new Thread(new Runnable() {
@@ -308,7 +310,10 @@ public class FacebookConnect extends Plugin {
 					PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, "UnknownError");
 					try {
 						JSONObject result = new JSONObject(me.facebook.request("/me"));
+						result.put("accessToken", accessToken);
+						result.put("expirationDate", accessExpires);
 						Log.d(CLASS, "AuthorizeDialogListener::result " + result.toString());
+						// no callback :(
 						pluginResult = new PluginResult(PluginResult.Status.OK, result);
 					} catch (MalformedURLException e) {
 						pluginResult = new PluginResult(PluginResult.Status.ERROR, "MalformedURLException");
@@ -321,7 +326,8 @@ public class FacebookConnect extends Plugin {
 						e.printStackTrace();
 					}
 
-					pluginResult.setKeepCallback(false);
+					//pluginResult.setKeepCallback(true);
+					//Log.d(CLASS, "callbackId="+callbackId);
 					me.source.success(pluginResult, callbackId);
 				}
 			});
