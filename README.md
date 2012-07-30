@@ -13,6 +13,8 @@ by [Olivier Louvignes](http://olouv.com)
 
 * Regarding the existing implementation : [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson, this version does not require the Facebook JS sdk (redundant to native sdk). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling).
 
+* I'm having some issues making the callbacks of Android SSO work properly (the first time when there is a dialog in place) with CDV 2.0.
+
 ## PLUGIN SETUP FOR IOS ##
 
 Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cordova-ios).
@@ -47,21 +49,6 @@ Using this plugin requires [Cordova Android](https://github.com/apache/incubator
 
 
     <plugin name="FacebookConnect" value="org.apache.cordova.plugins.FacebookConnect"/>
-
-
-5. Modify your application main Activity by adding this method for SSO support:
-
->
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //String error = (data != null) ? data.getStringExtra("error") : "";
-        //Log.d("CordovaActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode + ", error=" + error);
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == Activity.RESULT_CANCELED) data = new Intent();
-        data.putExtra("requestCode", requestCode);
-        data.putExtra("resultCode", resultCode);
-        this.onNewIntent(data);
-    }
 
 
 ## JAVASCRIPT INTERFACE (IOS/ANDROID) ##

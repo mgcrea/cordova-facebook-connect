@@ -8,9 +8,7 @@
 
 package org.apache.cordova.plugins;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.Plugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.api.*;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -40,6 +39,7 @@ public class FacebookConnect extends Plugin {
 	private String appId;
 	private Facebook _facebook;
 	private AuthorizeDialogListener authorizeDialogListener;
+	//private final Handler handler = new Handler();
 
 	public Facebook getFacebook() {
 		if(this.appId == null) {
@@ -143,8 +143,8 @@ public class FacebookConnect extends Plugin {
 			}
 
 			final FacebookConnect me = this;
-			//Log.d(CLASS, "callbackId="+callbackId);
 			this.authorizeDialogListener = new AuthorizeDialogListener(me, callbackId);
+			this.cordova.setActivityResultCallback(this);
 			Runnable runnable = new Runnable() {
 				public void run() {
 					me.getFacebook().authorize(me.cordova.getActivity(), permissions, me.authorizeDialogListener);
@@ -192,6 +192,7 @@ public class FacebookConnect extends Plugin {
 		String httpMethod = params.has("httpMethod") ? params.getString("httpMethod") : "GET";
 
 		JSONObject result = new JSONObject(facebook.request(path, options, httpMethod));
+		Log.d(CLASS, "requestWithGraphPath::result " + result.toString());
 		pluginResult = new PluginResult(PluginResult.Status.OK, result);
 
 		return pluginResult;
@@ -247,31 +248,18 @@ public class FacebookConnect extends Plugin {
 	 */
 	public PluginResult logout(final JSONArray args, final String callbackId) throws JSONException, MalformedURLException, IOException {
 		Log.d(CLASS, "logout() :" + args.toString());
-		this.getFacebook().logout(this.cordova.getContext());
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
 		prefs.edit().remove("access_expires").commit();
 		prefs.edit().remove("access_token").commit();
+		this.getFacebook().logout(this.cordova.getContext());
 		return new PluginResult(PluginResult.Status.OK);
-	}
-
-	public void onNewIntent(Intent intent) {
-		Log.d(CLASS, "onNewIntent extras=" + intent.getExtras().keySet().toString());
-		int requestCode = intent.getExtras().getInt("requestCode");
-		int resultCode = intent.getExtras().getInt("resultCode");
-		intent.removeExtra("requestCode");
-		intent.removeExtra("resultCode");
-		if(resultCode == Activity.RESULT_CANCELED) {
-			this.authorizeDialogListener.onCancel();
-			return;
-		}
-		this.getFacebook().authorizeCallback(requestCode, resultCode, intent);
 	}
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.d(CLASS, "onActivityResult");
 		super.onActivityResult(requestCode, resultCode, data);
 		this.getFacebook().authorizeCallback(requestCode, resultCode, data);
+		//this.webView.sendJavascript("window.alert('test')"); //@todo not working :(
 	}
 
 	/**
@@ -313,7 +301,6 @@ public class FacebookConnect extends Plugin {
 						result.put("accessToken", accessToken);
 						result.put("expirationDate", accessExpires);
 						Log.d(CLASS, "AuthorizeDialogListener::result " + result.toString());
-						// no callback :(
 						pluginResult = new PluginResult(PluginResult.Status.OK, result);
 					} catch (MalformedURLException e) {
 						pluginResult = new PluginResult(PluginResult.Status.ERROR, "MalformedURLException");
@@ -326,8 +313,6 @@ public class FacebookConnect extends Plugin {
 						e.printStackTrace();
 					}
 
-					//pluginResult.setKeepCallback(true);
-					//Log.d(CLASS, "callbackId="+callbackId);
 					me.source.success(pluginResult, callbackId);
 				}
 			});
