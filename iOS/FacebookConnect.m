@@ -70,8 +70,10 @@ NSString *const kFunctionDialog = @"dialog";
 		self.facebook.expirationDate = [defaults objectForKey:@"FBExpirationDateKey"];
 
 		// Build returned result
-		[result setObject:self.facebook.accessToken forKey:@"accessToken"];
-		[result setObject:[self.dateFormatter stringFromDate:self.facebook.expirationDate] forKey:@"expirationDate"];
+		if ([self.facebook isSessionValid]) {
+			[result setObject:self.facebook.accessToken forKey:@"accessToken"];
+			[result setObject:[self.dateFormatter stringFromDate:self.facebook.expirationDate] forKey:@"expirationDate"];
+		}
 	}
 
 	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
