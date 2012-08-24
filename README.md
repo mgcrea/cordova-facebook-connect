@@ -7,20 +7,18 @@ by [Olivier Louvignes](http://olouv.com)
 
 * Both iOS & Android are supported with the same javascript interface.
 
-* For iOS, this plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `Libraries` folder (licensed under the Apache License, Version 2.0).
+* For iOS, this plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `FacebookSDK` folder (licensed under the Apache License, Version 2.0).
 
 * For Android, this plugin relies on the [Facebook Android SDK](https://github.com/facebook/facebook-android-sdk) that is packaged as a .jar in the `libs` folder (licensed under the Apache License, Version 2.0).
 
 * Regarding the existing implementation : [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson, this version does not require the Facebook JS sdk (redundant to native sdk). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling).
-
-* I'm having some issues making the callbacks of Android SSO work properly (the first time when there is a dialog in place) with CDV 2.0.
 
 ## PLUGIN SETUP FOR IOS ##
 
 Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cordova-ios).
 
 1. Make sure your Xcode project has been [updated for Cordova](https://github.com/apache/incubator-cordova-ios/blob/master/guides/Cordova%20Upgrade%20Guide.md)
-2. Rename the `iOS` folder to `FacebookConnect`, drag and drop it from Finder to your Plugins folder in XCode, using "Create groups for any added folders"
+2. Rename the `ios` folder to `FacebookConnect`, drag and drop it from Finder to your Plugins folder in XCode, using "Create groups for any added folders"
 3. Add the .js files to your `www` folder on disk, and add reference(s) to the .js files using `<script>` tags in your html file(s)
 
 
@@ -28,9 +26,9 @@ Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cor
 
 
 4. Add new entry with key `FacebookConnect` and value `FacebookConnect` to `Plugins` in `Cordova.plist/Cordova.plist`
-5. Modify your application .plist according to the [Facebook iOS : Getting started guide](https://developers.facebook.com/docs/mobile/ios/build/), check the `Modify the app property list file` section.
+5. Modify your application .plist according to the [Facebook iOS : Getting started guide](https://developers.facebook.com/docs/getting-started/getting-started-with-the-ios-sdk/#project), check the `Modify the app property list file` section.
 
-    The last thing that needs to be accomplished to enable SSO support is a change to the .plist file that handles configuration for the app. Xcode creates this file automatically when the project is created. A specific URL needs to be registered in this file that uniquely identifies the app with iOS. Create a new row named URL types with a single item, URL Schemes, containing a single value, fbYOUR_APP_ID (the literal characters fb followed by your app ID). The following shows exactly how the row should appear in the .plist file:
+   create an array key called URL types with a single array sub-item called URL Schemes. Give this a single item with your app ID prefixed with fb: [ScreenShot](https://developers.facebook.com/attachment/iosappid2.png). This is used to ensure the application will receive the callback URL of the web-based OAuth flow.
 
 ## PLUGIN SETUP FOR ANDROID ##
 
