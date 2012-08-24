@@ -1,0 +1,30 @@
+body {
+	vertical-align: top; text-transform: none;
+}
+h1 {
+	text-transform: uppercase;
+}
+h2, h3 {
+	text-align: center;
+	text-transform: uppercase;
+}
+.app {
+	margin-top:20px;
+}
+
+a.btn {
+    color: #eee;
+    border: 1px solid #ccc;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    text-align:center;
+    display:block;
+    background:#333;
+    width:80%;
+    margin: 0 auto;
+    color:#fff;
+    font-size:1.2em;
+    font-weight: bold;
+    padding: .25em 0;
+    text-decoration:none;
+}
