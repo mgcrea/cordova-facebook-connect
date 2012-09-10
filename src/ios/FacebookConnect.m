@@ -60,7 +60,7 @@ NSString *const kFunctionDialog = @"dialog";
 	[self.callbackIds setValue:[arguments pop] forKey:@"initWithAppId"];
 	self.appId = [options objectForKey:@"appId"] ?: @"";
 
-	NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
+	NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
 	[result setObject:self.appId forKey:@"appId"];
 
 	// Check for any stored session update Facebook session information
@@ -86,7 +86,7 @@ NSString *const kFunctionDialog = @"dialog";
 
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"login"];
-	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[[NSMutableArray alloc] init] autorelease];
+	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[NSMutableArray alloc] init];
 
 	if([options objectForKey:@"appId"]) {
 		self.appId = [options objectForKey:@"appId"];
@@ -113,7 +113,7 @@ NSString *const kFunctionDialog = @"dialog";
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"requestWithGraphPath"];
 	NSString *path = [options objectForKey:@"path"] ?: @"me";
-	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[[NSMutableDictionary alloc] init] autorelease];
+	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[NSMutableDictionary alloc] init];
 	NSString *httpMethod = [options objectForKey:@"httpMethod"] ?: @"GET";
 
 	// Make sure we pass a string for a limit key
@@ -132,7 +132,7 @@ NSString *const kFunctionDialog = @"dialog";
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:kFunctionDialog];
 	NSString *method = [options objectForKey:@"method"] ?: @"apprequests";
-	NSMutableDictionary* params = [options objectForKey:@"params"] ?: [[[NSMutableDictionary alloc] init] autorelease];
+	NSMutableDictionary* params = [options objectForKey:@"params"] ?: [[NSMutableDictionary alloc] init];
 
 	[self.facebook dialog:method andParams:params andDelegate:self];
 }
@@ -246,7 +246,6 @@ NSString *const kFunctionDialog = @"dialog";
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:mutableResult];
 		[self writeJavascript:[pluginResult toSuccessCallbackString:matchingCallbackId]];
 
-		[mutableResult release];
 	} else if ([result isKindOfClass:[NSData class]]) {
 		DLog(@"Unsupported result... todo! %@", result);
 		//[profilePicture release];
@@ -286,7 +285,6 @@ NSString *const kFunctionDialog = @"dialog";
 	NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"1", @"cancelled", @"User dissmissed the dialog", @"message", nil];
 	CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:result];
 	[self writeJavascript:[pluginResult toErrorCallbackString:[self.callbackIds valueForKey:kFunctionDialog]]];
-	[result release];
 }
 
 /**
@@ -311,7 +309,7 @@ NSString *const kFunctionDialog = @"dialog";
  */
 - (NSDictionary *)parseURLParams:(NSString *)query {
 	NSArray *pairs = [query componentsSeparatedByString:@"&"];
-	NSMutableDictionary *params = [[[NSMutableDictionary alloc] init] autorelease];
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
 	for (NSString *pair in pairs) {
 		NSArray *kv = [pair componentsSeparatedByString:@"="];
 		NSString *key = [[kv objectAtIndex:0] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -319,17 +317,6 @@ NSString *const kFunctionDialog = @"dialog";
 		[params setObject:val forKey:key];
 	}
 	return params;
-}
-
-#pragma mark - Memory management
-
-- (void) dealloc {
-	[_callbackIds release];
-	[_appId release];
-	[_facebook release];
-	[_facebookRequests release];
-	[_dateFormatter release];
-	[super dealloc];
 }
 
 @end
