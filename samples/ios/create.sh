@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo -ne "Please enter plugin name: [MessageBox] "
+echo -ne "Please enter plugin name: [FacebookConnect] "
 read $pluginName;
-if [[ -z $pluginName ]]; then pluginName="MessageBox"; fi;
+if [[ -z $pluginName ]]; then pluginName="FacebookConnect"; fi;
 
 if [[ ! -d cordova/cordova-ios ]]; then
 	git submodule update --init cordova/cordova-ios

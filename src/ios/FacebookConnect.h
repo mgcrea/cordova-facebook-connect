@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
-
-#import "FBConnect.h"
+#import <FacebookSDK/FacebookSDK.h>
+#import <FacebookSDK/Facebook.h>
 
 @interface FacebookConnect : CDVPlugin <FBSessionDelegate, FBRequestDelegate, FBDialogDelegate> {
 }
