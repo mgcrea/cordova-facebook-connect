@@ -12,16 +12,9 @@
 #import "FBConnect.h"
 
 @interface FacebookConnect : CDVPlugin <FBSessionDelegate, FBRequestDelegate, FBDialogDelegate> {
- @private
-  NSMutableDictionary *_callbackIds;
-  NSString *_appId;
-  Facebook *_facebook;
-  NSMutableDictionary *_facebookRequests;
-  NSDateFormatter *_dateFormatter;
 }
 
-#pragma mark -
-#pragma mark Properties
+#pragma mark - Properties
 
 @property (nonatomic, retain) NSMutableDictionary *callbackIds;
 @property (nonatomic, copy) NSString *appId;
@@ -29,8 +22,7 @@
 @property (nonatomic, retain) NSMutableDictionary *facebookRequests;
 @property (nonatomic, retain) NSDateFormatter *dateFormatter;
 
-#pragma mark -
-#pragma mark Instance methods
+#pragma mark - Instance methods
 
 - (void)initWithAppId:(NSMutableArray *)arguments withDict:(NSMutableDictionary*)options;
 - (void)login:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
@@ -40,10 +32,11 @@
 
 @end
 
-#pragma mark -
-#pragma mark Logging tools
+#pragma mark - Logging tools
 
-
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-
+#ifdef DEBUG
+#   define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#   define DLog(...)
+#endif
 #define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);

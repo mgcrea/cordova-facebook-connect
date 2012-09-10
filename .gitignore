@@ -2,5 +2,5 @@ DerivedData/
 build/
 xcuserdata
 .DS_Store
+samples/ios/FacebookConnect
 !.gitignore
-

@@ -3,7 +3,7 @@ by [Olivier Louvignes](http://olouv.com)
 
 ## DESCRIPTION ##
 
-* This plugin provides a simple way to use Facebook Graph API in Cordova. It does comply with the latest (future-2.x) cordova standards.
+* This plugin provides a simple way to use Facebook Graph API in Cordova. This plugin is built for Cordova >= v2.1.0 with ARC.
 
 * Both iOS & Android are supported with the same javascript interface.
 
@@ -12,6 +12,10 @@ by [Olivier Louvignes](http://olouv.com)
 * For Android, this plugin relies on the [Facebook Android SDK](https://github.com/facebook/facebook-android-sdk) that is packaged as a .jar in the `libs` folder (licensed under the Apache License, Version 2.0).
 
 * Regarding the existing implementation : [phonegap-plugin-facebook-connect](https://github.com/davejohnson/phonegap-plugin-facebook-connect) built by Dave Johnson, this version does not require the Facebook JS sdk (redundant to native sdk). It is also quite easier to use (unified login & initial /me request) and it does support multiple graph requests (strong callback handling).
+
+## SAMPLE PROJECT GENERATION ##
+
+You can generate a sample XCode project by running `samples/ios/create.sh` from the root of the repository.
 
 ## PLUGIN SETUP FOR IOS ##
 

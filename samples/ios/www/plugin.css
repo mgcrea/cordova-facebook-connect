@@ -1,21 +1,20 @@
 body {
 	vertical-align: top; text-transform: none;
 }
-h1 {
-	text-transform: uppercase;
-}
-h2, h3 {
+h1, h2, h3 {
 	text-align: center;
 	text-transform: uppercase;
 }
 .app {
-	margin-top:20px;
+	margin-top: 0px;
+	top: 20px;
 }
 
 a.btn {
     color: #eee;
     border: 1px solid #ccc;
     -webkit-border-radius: 6px;
+    -webkit-tap-highlight-color: green;
     border-radius: 6px;
     text-align:center;
     display:block;
@@ -27,4 +26,8 @@ a.btn {
     font-weight: bold;
     padding: .25em 0;
     text-decoration:none;
+}
+
+a.btn:active {
+  color: green;
 }
