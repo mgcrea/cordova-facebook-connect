@@ -117,7 +117,7 @@ NSString *const kFunctionDialog = @"dialog";
 	NSString *httpMethod = [options objectForKey:@"httpMethod"] ?: @"GET";
 
 	// Make sure we pass a string for a limit key
-	if([params valueForKey:@"limit"]) [params setValue:[NSString stringWithFormat:@"%d", [params valueForKey:@"limit"]] forKey:@"limit"];
+	if([params valueForKey:@"limit"]) [params setValue:[NSString stringWithFormat:@"%d", [[params valueForKey:@"limit"] integerValue]] forKey:@"limit"];
 
 	FBRequest *request = [self.facebook requestWithGraphPath:path andParams:params andHttpMethod:httpMethod andDelegate:self];
 
