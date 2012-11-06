@@ -3,9 +3,9 @@ by [Olivier Louvignes](http://olouv.com)
 
 ## DESCRIPTION ##
 
-* This plugin provides a simple way to use Facebook Graph API in Cordova. This plugin is built for Cordova >= v2.1.0 with ARC.
+* This plugin provides a simple way to use Facebook Graph API in Cordova.
 
-* Both iOS & Android are supported with the same javascript interface.
+* This plugin is built for Cordova >= v2.1.0 with ARC. Both iOS & Android are supported with the same javascript interface.
 
 * For iOS, this plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `FacebookSDK` folder (licensed under the Apache License, Version 2.0).
 
@@ -32,7 +32,12 @@ Using this plugin requires [Cordova iOS](https://github.com/apache/incubator-cor
 4. Add new entry with key `FacebookConnect` and value `FacebookConnect` to `Plugins` in `Cordova.plist/Cordova.plist`
 5. Modify your application .plist according to the [Facebook iOS : Getting started guide](https://developers.facebook.com/docs/getting-started/getting-started-with-the-ios-sdk/#project), check the `Modify the app property list file` section.
 
+>
    create an array key called URL types with a single array sub-item called URL Schemes. Give this a single item with your app ID prefixed with fb: [ScreenShot](https://developers.facebook.com/attachment/iosappid2.png). This is used to ensure the application will receive the callback URL of the web-based OAuth flow.
+
+6. In the Build Settings tab, search for Other Linker Flags. Add the value `-lsqlite3.0`.
+
+7. In the Build Phases tab, link binary with libraries section. Add the Social.framework, Accounts.framework and AdSupport.framework frameworks. Make them optional to support pre-iOS6 devices.
 
 ## PLUGIN SETUP FOR ANDROID ##
 
