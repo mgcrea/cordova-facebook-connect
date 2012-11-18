@@ -1,6 +1,7 @@
 #!/bin/bash
+INFO="\033[32m\033[1m[INFO]\033[22m\033[39m"
 
-echo -ne "Please enter plugin name: [FacebookConnect] "
+echo -ne "$INFO Please enter plugin name: [FacebookConnect] "
 read $pluginName;
 if [[ -z $pluginName ]]; then pluginName="FacebookConnect"; fi;
 
@@ -10,7 +11,7 @@ fi;
 
 path=samples/ios/$pluginName;
 rm -rf $path
-cordova/cordova-ios/bin/create $path org.apache.cordova.plugins.$pluginName $pluginName
+cordova/cordova-ios/bin/create --shared $path org.apache.cordova.plugins.$pluginName $pluginName
 
 cp www/*.js $path/www/js;
 cp samples/ios/www/*.js $path/www/js;
@@ -19,4 +20,4 @@ cp samples/ios/www/*.html $path/www;
 ln -s ./../../../../../src/ios $path/$pluginName/Plugins/$pluginName;
 sed "/<key>Device<\/key>/i\ \t\t<key>$pluginName<\/key>\n\t\t<string>$pluginName<\/string>" -i $path/$pluginName/Cordova.plist
 
-echo -ne "Drag \"Plugins/$pluginName\" folder to XCode then build/run.\n"
+echo -ne "$INFO Drag \"Plugins/$pluginName\" folder to Xcode \"Plugins\" folder then build/run.\n"
