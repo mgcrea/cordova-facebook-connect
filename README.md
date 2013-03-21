@@ -5,7 +5,7 @@ by [Olivier Louvignes](http://olouv.com)
 
 * This plugin provides a simple way to use Facebook Graph API in Cordova.
 
-* This plugin is built for Cordova >= v2.1.0 with ARC. Both iOS & Android are supported with the same javascript interface.
+* This plugin is built for Cordova >= v2.4.0 with ARC. Both iOS & Android are supported with the same javascript interface.
 
 * For iOS, this plugin relies on the [Facebook iOS SDK](https://github.com/facebook/facebook-ios-sdk) that is bundled in the `FacebookSDK` folder (licensed under the Apache License, Version 2.0).
 
