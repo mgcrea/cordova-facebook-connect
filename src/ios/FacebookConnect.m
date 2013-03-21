@@ -85,7 +85,7 @@ NSString *const kFunctionDialog = @"dialog";
 
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"login"];
-	NSMutableArray *permissions = [options objectForKey:@"permissions"] ?: [[NSMutableArray alloc] init];
+	NSArray *permissions = [options objectForKey:@"permissions"] ?: [[NSArray alloc] init];
 
 	if([options objectForKey:@"appId"]) {
 		self.appId = [options objectForKey:@"appId"];
@@ -112,7 +112,7 @@ NSString *const kFunctionDialog = @"dialog";
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:@"requestWithGraphPath"];
 	NSString *path = [options objectForKey:@"path"] ?: @"me";
-	NSMutableDictionary *params = [options objectForKey:@"options"] ?: [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *params = [[options objectForKey:@"options"] mutableCopy] ?: [[NSMutableDictionary alloc] init];
 	NSString *httpMethod = [options objectForKey:@"httpMethod"] ?: @"GET";
 
 	// Make sure we pass a string for a limit key
@@ -131,7 +131,7 @@ NSString *const kFunctionDialog = @"dialog";
 	// The first argument in the arguments parameter is the callbackId.
 	[self.callbackIds setValue:[arguments pop] forKey:kFunctionDialog];
 	NSString *method = [options objectForKey:@"method"] ?: @"apprequests";
-	NSMutableDictionary* params = [options objectForKey:@"params"] ?: [[NSMutableDictionary alloc] init];
+	NSMutableDictionary* params = [[options objectForKey:@"params"] mutableCopy] ?: [[NSMutableDictionary alloc] init];
 
 	[self.facebook dialog:method andParams:params andDelegate:self];
 }
