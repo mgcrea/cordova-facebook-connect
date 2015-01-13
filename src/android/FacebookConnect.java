@@ -6,408 +6,481 @@
 // Copyright 2012 Olivier Louvignes. All rights reserved.
 // MIT Licensed
 
-package org.apache.cordova.plugins;
+package org.apache.cordova.plugins.FacebookConnect;
 
-import org.apache.cordova.api.*;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import com.facebook.android.DialogError;
+import com.facebook.android.Facebook;
+import com.facebook.android.Facebook.DialogListener;
+import com.facebook.android.FacebookError;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Iterator;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
-import com.facebook.android.*;
-import com.facebook.android.Facebook.*;
-
 @SuppressWarnings("deprecation")
-public class FacebookConnect extends Plugin {
+public class FacebookConnect extends CordovaPlugin {
 
-	private final String CLASS = "FacebookConnect";
+    private final String CLASS = "FacebookConnect";
 
-	private String appId;
-	private Facebook _facebook;
-	private AuthorizeDialogListener authorizeDialogListener;
-	//private final Handler handler = new Handler();
+    private String appId;
+    private Facebook _facebook;
+    private AuthorizeDialogListener authorizeDialogListener;
+    //private final Handler handler = new Handler();
 
-	public Facebook getFacebook() {
-		if(this.appId == null) {
-			Log.e(CLASS, "ERROR: You must provide a non-empty appId.");
-		}
-		if(this._facebook == null) {
-			this._facebook = new Facebook(this.appId);
-		}
-		return _facebook;
-	}
+    public Facebook getFacebook() {
+        if (this.appId == null) {
+            Log.e(CLASS, "ERROR: You must provide a non-empty appId.");
+        }
+        if (this._facebook == null) {
+            this._facebook = new Facebook(this.appId);
+        }
+        return _facebook;
+    }
 
-	@Override
-	public PluginResult execute(final String action, final JSONArray args, final String callbackId) {
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.INVALID_ACTION, "Unsupported operation: " + action);
+    @Override
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-		try {
-			if(action.equals("initWithAppId")) pluginResult = this.initWithAppId(args, callbackId);
-			else if(action.equals("login")) pluginResult = this.login(args, callbackId);
-			else if(action.equals("requestWithGraphPath")) pluginResult = this.requestWithGraphPath(args, callbackId);
-			else if(action.equals("dialog")) pluginResult = this.dialog(args, callbackId);
-			else if(action.equals("logout")) pluginResult = this.logout(args, callbackId);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			pluginResult = new PluginResult(PluginResult.Status.MALFORMED_URL_EXCEPTION);
-		} catch (IOException e) {
-			e.printStackTrace();
-			pluginResult = new PluginResult(PluginResult.Status.IO_EXCEPTION);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
-		}
+        Boolean success = false;
 
-		return pluginResult;
-	}
+        try {
+            if (action.equals("initWithAppId")) {
+                success = this.initWithAppId(args, callbackContext);
+            } else if (action.equals("login")) {
+                success = this.login(args, callbackContext);
+            } else if (action.equals("requestWithGraphPath")) {
+                success = this.requestWithGraphPath(args, callbackContext);
+            } else if (action.equals("dialog")) {
+                success = this.dialog(args, callbackContext);
+            } else if (action.equals("logout")) {
+                success = this.logout(args, callbackContext);
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.MALFORMED_URL_EXCEPTION));
+        } catch (IOException e) {
+            e.printStackTrace();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION));
+        } catch (JSONException e) {
+            e.printStackTrace();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+        }
 
-	/**
-	 * Cordova interface to initialize the appId
-	 *
-	 * @param args
-	 * @param callbackId
-	 * @return PluginResult
-	 * @throws JSONException
-	 */
-	public PluginResult initWithAppId(final JSONArray args, final String callbackId) throws JSONException {
-		Log.d(CLASS, "initWithAppId()");
-		JSONObject params = args.getJSONObject(0);
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
-		JSONObject result = new JSONObject();
+        return success;
+    }
 
-		this.appId = params.getString("appId");
-		Facebook facebook = this.getFacebook();
-		result.put("appId", this.appId);
+    /**
+     * Cordova interface to initialize the appId
+     *
+     * @param args JSONArray
+     * @param context CallbackContext
+     * @return PluginResult
+     * @throws JSONException
+     */
+    public Boolean initWithAppId(final JSONArray args, CallbackContext context) throws JSONException {
+        Log.d(CLASS, "initWithAppId()");
+        JSONObject params = args.getJSONObject(0);
 
-		// Check for any stored session update Facebook session information
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-		String accessToken = prefs.getString("access_token", null);
-		Long accessExpires = prefs.getLong("access_expires", 0);
-		if(accessToken != null) facebook.setAccessToken(accessToken);
-		if(accessExpires != 0) facebook.setAccessExpires(accessExpires);
+        JSONObject result = new JSONObject();
 
-		result.put("accessToken", accessToken);
-		result.put("expirationDate", accessExpires);
+        this.appId = params.getString("appId");
+        Facebook facebook = this.getFacebook();
+        result.put("appId", this.appId);
 
-		pluginResult = new PluginResult(PluginResult.Status.OK, result);
-		this.success(pluginResult, callbackId);
+        // Check for any stored session update Facebook session information
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getActivity());
+        String accessToken = prefs.getString("access_token", null);
+        Long accessExpires = prefs.getLong("access_expires", 0);
+        if (accessToken != null) {
+            facebook.setAccessToken(accessToken);
+        }
+        if (accessExpires != 0) {
+            facebook.setAccessExpires(accessExpires);
+        }
 
-		return pluginResult;
+        result.put("accessToken", accessToken);
+        result.put("expirationDate", accessExpires);
 
-	}
+        context.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 
-	/**
-	 * Cordova interface to perform a login
-	 *
-	 * @param args
-	 * @param callbackId
-	 * @return PluginResult
-	 * @throws JSONException
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	public PluginResult login(final JSONArray args, final String callbackId) throws JSONException, MalformedURLException, IOException {
-		Log.d(CLASS, "login() :" + args.toString());
-		JSONObject params = args.getJSONObject(0);
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
 
-		if(params.has("appId")) this.appId = params.getString("appId");
-		Facebook facebook = this.getFacebook();
+        return true;
 
-		// Check for any stored session update Facebook session information
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-		String accessToken = prefs.getString("access_token", null);
-		Long accessExpires = prefs.getLong("access_expires", 0);
-		if(accessToken != null) facebook.setAccessToken(accessToken);
-		if(accessExpires != 0) facebook.setAccessExpires(accessExpires);
+    }
 
-		if(!this.getFacebook().isSessionValid()) {
-			JSONArray permissionsArray = (JSONArray)params.get("permissions");
-			final String[] permissions = new String[permissionsArray.length()];
-			for (int i=0; i < permissionsArray.length(); i++) {
-				permissions[i] = permissionsArray.getString(i);
-			}
+    /**
+     * Cordova interface to perform a login
+     *
+     * @param args JSONArray
+     * @param context CallbackContext
+     * @return PluginResult
+     * @throws JSONException
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public Boolean login(final JSONArray args, final CallbackContext context) throws JSONException, IOException {
+        Log.d(CLASS, "login() :" + args.toString());
+        final JSONObject params = args.getJSONObject(0);
+        final PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
 
-			final FacebookConnect me = this;
-			this.authorizeDialogListener = new AuthorizeDialogListener(me, callbackId);
-			this.cordova.setActivityResultCallback(this);
-			Runnable runnable = new Runnable() {
-				public void run() {
-					me.getFacebook().authorize(me.cordova.getActivity(), permissions, me.authorizeDialogListener);
-				};
-			};
-			pluginResult.setKeepCallback(true);
-			this.cordova.getActivity().runOnUiThread(runnable);
-		} else {
-			JSONObject result = new JSONObject(facebook.request("/me"));
-			result.put("accessToken", accessToken);
-			result.put("expirationDate", accessExpires);
-			Log.d(CLASS, "login::result " + result.toString());
-			pluginResult = new PluginResult(PluginResult.Status.OK, result);
-		}
+        if (params.has("appId")) this.appId = params.getString("appId");
+        final Facebook facebook = this.getFacebook();
 
-		return pluginResult;
-	}
+        // Check for any stored session update Facebook session information
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getActivity());
+        final String accessToken = prefs.getString("access_token", null);
+        final Long accessExpires = prefs.getLong("access_expires", 0);
 
-	/**
-	 * Cordova interface to perfom a graph request
-	 *
-	 * @param args
-	 * @param callbackId
-	 * @return PluginResult
-	 * @throws JSONException
-	 * @throws FileNotFoundException
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	public PluginResult requestWithGraphPath(final JSONArray args, final String callbackId) throws JSONException, FileNotFoundException, MalformedURLException, IOException {
-		Log.d(CLASS, "requestWithGraphPath() :" + args.toString());
-		JSONObject params = args.getJSONObject(0);
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
+        final FacebookConnect me = this;
 
-		Facebook facebook = this.getFacebook();
-		String path = params.has("path") ? params.getString("path") : "me";
-		JSONObject optionsObject = (JSONObject)params.get("options");
-		final Bundle options = new Bundle();
-		Iterator<?> keys = optionsObject.keys();
-		while( keys.hasNext() ){
-			String key = (String)keys.next();
-			options.putString(key, optionsObject.getString(key));
-			//if(optionsObject.get(key) instanceof JSONObject)
-		}
-		String httpMethod = params.has("httpMethod") ? params.getString("httpMethod") : "GET";
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
 
-		JSONObject result = new JSONObject(facebook.request(path, options, httpMethod));
-		Log.d(CLASS, "requestWithGraphPath::result " + result.toString());
-		pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                if (accessToken != null) {
+                    facebook.setAccessToken(accessToken);
+                }
+                if (accessExpires != 0) {
+                    facebook.setAccessExpires(accessExpires);
+                }
 
-		return pluginResult;
-	}
+                if (!me.getFacebook().isSessionValid()) {
+                    JSONArray permissionsArray = null;
+                    String[] permissions = new String[0];
 
-	/**
-	 * Cordova interface to display a dialog
-	 *
-	 * @param args
-	 * @param callbackId
-	 * @return PluginResult
-	 * @throws JSONException
-	 * @throws FileNotFoundException
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	public PluginResult dialog(final JSONArray args, final String callbackId) throws JSONException, FileNotFoundException, MalformedURLException, IOException {
-		Log.d(CLASS, "dialog() :" + args.toString());
-		JSONObject params = args.getJSONObject(0);
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
+                    try {
+                        permissionsArray = (JSONArray) params.get("permissions");
+                        permissions = new String[permissionsArray.length()];
+            for (int i = 0; i < permissionsArray.length(); i++) {
+                permissions[i] = permissionsArray.getString(i);
+            }
+                    } catch (JSONException e) {
+                        context.error("JSON exception: " + e.getMessage());
+                        e.printStackTrace();
+                    }
 
-		final String method = params.has("method") ? params.getString("method") : "feed";
-		JSONObject optionsObject = (JSONObject)params.get("params");
-		final Bundle options = new Bundle();
-		Iterator<?> keys = optionsObject.keys();
-		while( keys.hasNext() ){
-			String key = (String)keys.next();
-			options.putString(key, optionsObject.getString(key));
-			//if(optionsObject.get(key) instanceof JSONObject)
-		}
+                    final String[] finalPermissions = permissions;
 
-		final FacebookConnect me = this;
-		Runnable runnable = new Runnable() {
-			public void run() {
-				me.getFacebook().dialog(me.cordova.getContext(), method, options, new RegularDialogListener(me, callbackId));
-			};
-		};
-		pluginResult.setKeepCallback(true);
-		this.cordova.getActivity().runOnUiThread(runnable);
+                    me.authorizeDialogListener = new AuthorizeDialogListener(me, context);
+                    me.cordova.setActivityResultCallback(me);
+            Runnable runnable = new Runnable() {
+                public void run() {
+                            me.getFacebook().authorize(me.cordova.getActivity(), finalPermissions, me.authorizeDialogListener);
+                }
+            };
+            pluginResult.setKeepCallback(true);
+                    me.cordova.getActivity().runOnUiThread(runnable);
+        } else {
+                    JSONObject result = null;
+                    try {
+                        result = new JSONObject(facebook.request("/me"));
+            result.put("accessToken", accessToken);
+            result.put("expirationDate", accessExpires);
+            Log.d(CLASS, "login::result " + result.toString());
+            context.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                    } catch (JSONException e) {
+                        context.error("JSON exception: " + e.getMessage());
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        context.error("IO exception: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+        }
+        }
+        });
 
-		return pluginResult;
-	}
+        return true;
+    }
 
-	/**
-	 * Cordova interface to logout from Facebook
-	 *
-	 * @param args
-	 * @param callbackId
-	 * @return PluginResult
-	 * @throws JSONException
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	public PluginResult logout(final JSONArray args, final String callbackId) throws JSONException, MalformedURLException, IOException {
-		Log.d(CLASS, "logout() :" + args.toString());
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-		prefs.edit().remove("access_expires").commit();
-		prefs.edit().remove("access_token").commit();
-		this.getFacebook().logout(this.cordova.getContext());
-		return new PluginResult(PluginResult.Status.OK);
-	}
+    /**
+     * Cordova interface to perfom a graph request
+     *
+     * @param args JSONArray
+     * @param context CallbackContext
+     * @return Boolean
+     * @throws JSONException
+     */
+    public Boolean requestWithGraphPath(final JSONArray args, final CallbackContext context) throws JSONException {
+        Log.d(CLASS, "requestWithGraphPath() :" + args.toString());
+        JSONObject params = args.getJSONObject(0);
 
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		this.getFacebook().authorizeCallback(requestCode, resultCode, data);
-		//this.webView.sendJavascript("window.alert('test')"); //@todo not working :(
-	}
+        final Facebook facebook = this.getFacebook();
+        final String path = params.has("path") ? params.getString("path") : "me";
+        JSONObject optionsObject = (JSONObject) params.get("options");
+        final Bundle options = new Bundle();
+        Iterator<?> keys = optionsObject.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            options.putString(key, optionsObject.getString(key));
+            //if(optionsObject.get(key) instanceof JSONObject)
+        }
+        final String httpMethod = params.has("httpMethod") ? params.getString("httpMethod") : "GET";
 
-	/**
-	 * RegularDialogListener
-	 */
-	class AuthorizeDialogListener implements DialogListener {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
 
-		private Facebook facebook;
-		private CordovaInterface cordova;
-		private String callbackId;
-		private FacebookConnect source;
+                try {
+        JSONObject result = new JSONObject(facebook.request(path, options, httpMethod));
+        Log.d(CLASS, "requestWithGraphPath::result " + result.toString());
+        context.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                } catch (JSONException e) {
+                    context.error("JSON exception: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    context.error("IO exception: " + e.getMessage());
+                    e.printStackTrace();
+                }
 
-		public AuthorizeDialogListener(FacebookConnect me, final String callbackId) {
-			super();
+            }
+        });
 
-			this.source = me;
-			this.facebook = me.getFacebook();
-			this.cordova = me.cordova;
-			this.callbackId = callbackId;
-		}
+        return true;
+    }
 
-		@Override
-		public void onComplete(Bundle values) {
-			Log.d(CLASS, "AuthorizeDialogListener::onComplete() " + values.toString());
+    /**
+     * Cordova interface to display a dialog
+     *
+     * @param args JSONArray
+     * @param context CallbackContext
+     * @return Boolean
+     * @throws JSONException
+     * @throws FileNotFoundException
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public Boolean dialog(final JSONArray args, final CallbackContext context) throws JSONException, IOException {
+        Log.d(CLASS, "dialog() :" + args.toString());
+        JSONObject params = args.getJSONObject(0);
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
 
-			// Update session information
-			final String accessToken = this.facebook.getAccessToken();
-			final long accessExpires = this.facebook.getAccessExpires();
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getContext());
-			prefs.edit().putString("access_token", accessToken).commit();
-			prefs.edit().putLong("access_expires", accessExpires).commit();
+        final String method = params.has("method") ? params.getString("method") : "feed";
+        JSONObject optionsObject = (JSONObject) params.get("params");
+        final Bundle options = new Bundle();
+        Iterator<?> keys = optionsObject.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            options.putString(key, optionsObject.getString(key));
+            //if(optionsObject.get(key) instanceof JSONObject)
+        }
 
-			final AuthorizeDialogListener me = this;
-			Thread thread = new Thread(new Runnable() {
-				public void run() {
-					PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, "UnknownError");
-					try {
-						JSONObject result = new JSONObject(me.facebook.request("/me"));
-						result.put("accessToken", accessToken);
-						result.put("expirationDate", accessExpires);
-						Log.d(CLASS, "AuthorizeDialogListener::result " + result.toString());
-						pluginResult = new PluginResult(PluginResult.Status.OK, result);
-					} catch (MalformedURLException e) {
-						pluginResult = new PluginResult(PluginResult.Status.ERROR, "MalformedURLException");
-						e.printStackTrace();
-					} catch (JSONException e) {
-						pluginResult = new PluginResult(PluginResult.Status.ERROR, "JSONException");
-						e.printStackTrace();
-					} catch (IOException e) {
-						pluginResult = new PluginResult(PluginResult.Status.ERROR, "JSONException");
-						e.printStackTrace();
-					}
+        final FacebookConnect me = this;
+        Runnable runnable = new Runnable() {
+            public void run() {
+                me.getFacebook().dialog(me.cordova.getActivity(), method, options, new RegularDialogListener(me, context));
+            }
+        };
+        pluginResult.setKeepCallback(true);
+        this.cordova.getActivity().runOnUiThread(runnable);
 
-					me.source.success(pluginResult, callbackId);
-				}
-			});
-			thread.start();
-		}
+        return true;
+    }
 
-		@Override
-		public void onFacebookError(FacebookError e) {
-			Log.d(CLASS, "AuthorizeDialogListener::onFacebookError() " + e.getMessage());
-			JSONObject result = new JSONObject();
-			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
-			this.source.error(result, this.callbackId);
-		}
+    /**
+     * Cordova interface to logout from Facebook
+     *
+     * @param args JSONArray
+     * @param context CallbackContext
+     * @return Boolean
+     * @throws JSONException
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public Boolean logout(final JSONArray args, CallbackContext context) throws JSONException, MalformedURLException, IOException {
+        Log.d(CLASS, "logout() :" + args.toString());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getActivity());
+        prefs.edit().remove("access_expires").commit();
+        prefs.edit().remove("access_token").commit();
+        this.getFacebook().logout(this.cordova.getActivity());
+        context.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+        return true;
+    }
 
-		@Override
-		public void onError(DialogError e) {
-			Log.d(CLASS, "AuthorizeDialogListener::onError() " + e.getMessage());
-			JSONObject result = new JSONObject();
-			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
-			this.source.error(result, this.callbackId);
-		}
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        this.getFacebook().authorizeCallback(requestCode, resultCode, data);
+        //this.webView.sendJavascript("window.alert('test')"); //@todo not working :(
+    }
 
-		@Override
-		public void onCancel() {
-			Log.d(CLASS, "AuthorizeDialogListener::onCancel()");
-			JSONObject result = new JSONObject();
-			try { result.put("cancelled", 1); } catch (JSONException e) {}
-			this.source.error(result, callbackId);
-		}
+    /**
+     * RegularDialogListener
+     */
+    class AuthorizeDialogListener implements DialogListener {
 
-	}
+        private Facebook facebook;
+        private CordovaInterface cordova;
+        private CallbackContext context;
+        private FacebookConnect source;
 
-	/**
-	 * RegularDialogListener
-	 */
-	class RegularDialogListener implements DialogListener {
+        public AuthorizeDialogListener(FacebookConnect me, CallbackContext context) {
+            super();
 
-		//private Facebook facebook;
-		//private CordovaInterface cordova;
-		private String callbackId;
-		private FacebookConnect source;
+            this.source = me;
+            this.facebook = me.getFacebook();
+            this.cordova = me.cordova;
+            this.context = context;
+        }
 
-		public RegularDialogListener(FacebookConnect me, final String callbackId) {
-			super();
+        @Override
+        public void onComplete(Bundle values) {
+            Log.d(CLASS, "AuthorizeDialogListener::onComplete() " + values.toString());
 
-			this.source = me;
-			//this.facebook = me.getFacebook();
-			//this.cordova = me.cordova;
-			this.callbackId = callbackId;
-		}
+            // Update session information
+            final String accessToken = this.facebook.getAccessToken();
+            final long accessExpires = this.facebook.getAccessExpires();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.cordova.getActivity());
+            prefs.edit().putString("access_token", accessToken).commit();
+            prefs.edit().putLong("access_expires", accessExpires).commit();
 
-		@Override
-		public void onComplete(Bundle values) {
-			Log.d(CLASS, "RegularDialogListener::onComplete() " + values.toString());
+            final AuthorizeDialogListener me = this;
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    PluginResult pluginResult;
+                    try {
+                        JSONObject result = new JSONObject(me.facebook.request("/me"));
+                        result.put("accessToken", accessToken);
+                        result.put("expirationDate", accessExpires);
+                        Log.d(CLASS, "AuthorizeDialogListener::result " + result.toString());
+                        pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                    } catch (MalformedURLException e) {
+                        pluginResult = new PluginResult(PluginResult.Status.ERROR, "MalformedURLException");
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        pluginResult = new PluginResult(PluginResult.Status.ERROR, "JSONException");
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        pluginResult = new PluginResult(PluginResult.Status.ERROR, "JSONException");
+                        e.printStackTrace();
+                    }
 
-			JSONObject result = new JSONObject();
-			Iterator<?> keys = values.keySet().iterator();
-			while( keys.hasNext() ){
-				String key = (String)keys.next();
-				try {
-					result.put(key, values.get(key));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
+                    me.context.sendPluginResult(pluginResult);
+                }
+            });
+            thread.start();
+        }
 
-			PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+        @Override
+        public void onFacebookError(FacebookError e) {
+            Log.d(CLASS, "AuthorizeDialogListener::onFacebookError() " + e.getMessage());
+            JSONObject result = new JSONObject();
+            try {
+                result.put("error", 1);
+                result.put("message", e.getMessage());
+            } catch (JSONException ex) {
+            }
+            this.context.error(result);
+        }
 
-			pluginResult.setKeepCallback(false);
-			this.source.success(pluginResult, this.callbackId);
-		}
+        @Override
+        public void onError(DialogError e) {
+            Log.d(CLASS, "AuthorizeDialogListener::onError() " + e.getMessage());
+            JSONObject result = new JSONObject();
+            try {
+                result.put("error", 1);
+                result.put("message", e.getMessage());
+            } catch (JSONException ex) {
+            }
+            this.context.error(result);
+        }
 
-		@Override
-		public void onFacebookError(FacebookError e) {
-			Log.d(CLASS, "RegularDialogListener::onFacebookError() " + e.getMessage());
-			JSONObject result = new JSONObject();
-			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
-			this.source.error(result, this.callbackId);
-		}
+        @Override
+        public void onCancel() {
+            Log.d(CLASS, "AuthorizeDialogListener::onCancel()");
+            JSONObject result = new JSONObject();
+            try {
+                result.put("cancelled", 1);
+            } catch (JSONException e) {
+            }
+            this.context.error(result);
+        }
 
-		@Override
-		public void onError(DialogError e) {
-			Log.d(CLASS, "RegularDialogListener::onError() " + e.getMessage());
-			JSONObject result = new JSONObject();
-			try { result.put("error", 1); result.put("message", e.getMessage()); } catch (JSONException ex) {}
-			this.source.error(result, this.callbackId);
-		}
+    }
 
-		@Override
-		public void onCancel() {
-			Log.d(CLASS, "RegularDialogListener::onCancel()");
-			JSONObject result = new JSONObject();
-			try { result.put("cancelled", 1); } catch (JSONException e) {}
-			this.source.error(result, this.callbackId);
-		}
+    /**
+     * RegularDialogListener
+     */
+    class RegularDialogListener implements DialogListener {
 
-	}
+        //private Facebook facebook;
+        //private CordovaInterface cordova;
+        private CallbackContext context;
+        private FacebookConnect source;
+
+        public RegularDialogListener(FacebookConnect me, CallbackContext context) {
+            super();
+
+            this.source = me;
+            //this.facebook = me.getFacebook();
+            //this.cordova = me.cordova;
+            this.context = context;
+        }
+
+        @Override
+        public void onComplete(Bundle values) {
+            Log.d(CLASS, "RegularDialogListener::onComplete() " + values.toString());
+
+            JSONObject result = new JSONObject();
+            Iterator<?> keys = values.keySet().iterator();
+            while (keys.hasNext()) {
+                String key = (String) keys.next();
+                try {
+                    result.put(key, values.get(key));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+
+            pluginResult.setKeepCallback(false);
+            this.context.sendPluginResult(pluginResult);
+        }
+
+        @Override
+        public void onFacebookError(FacebookError e) {
+            Log.d(CLASS, "RegularDialogListener::onFacebookError() " + e.getMessage());
+            JSONObject result = new JSONObject();
+            try {
+                result.put("error", 1);
+                result.put("message", e.getMessage());
+            } catch (JSONException ex) {
+            }
+            this.context.error(result);
+        }
+
+        @Override
+        public void onError(DialogError e) {
+            Log.d(CLASS, "RegularDialogListener::onError() " + e.getMessage());
+            JSONObject result = new JSONObject();
+            try {
+                result.put("error", 1);
+                result.put("message", e.getMessage());
+            } catch (JSONException ex) {
+            }
+            this.context.error(result);
+        }
+
+        @Override
+        public void onCancel() {
+            Log.d(CLASS, "RegularDialogListener::onCancel()");
+            JSONObject result = new JSONObject();
+            try {
+                result.put("cancelled", 1);
+            } catch (JSONException e) {
+            }
+            this.context.error(result);
+        }
+
+    }
 }

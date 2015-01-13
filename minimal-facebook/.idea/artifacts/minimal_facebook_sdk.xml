@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="minimal-facebook-sdk">
+    <output-path>$PROJECT_DIR$/out/artifacts/minimal_facebook_sdk</output-path>
+    <root id="archive" name="minimal-facebook-sdk.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/out/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
